@@ -125,19 +125,12 @@ export default function LandingPage() {
               <div className="relative">
                 <div className="w-full h-96 rounded-2xl border-2 border-border/30 shadow-2xl relative overflow-hidden">
                   <Image
-                    src="/analytics-dashboard.png"
-                    alt="Stock Boards Analytics Dashboard"
+                    src="/stockboards-workflow.png"
+                    alt="Stock Boards Workflow Integration Diagram"
                     fill
-                    className="object-cover rounded-2xl"
+                    className="object-contain rounded-2xl p-4 bg-white"
                   />
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 z-10 rounded-2xl"></div>
-                  <Image
-                    src="/stock-boards-logo.png"
-                    alt="Stock Boards Logo"
-                    width={96}
-                    height={96}
-                    className="w-24 h-24 drop-shadow-2xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20"
-                  />
                 </div>
                 <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-accent to-secondary rounded-full opacity-20 animate-pulse"></div>
                 <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full opacity-30 animate-pulse delay-1000"></div>
