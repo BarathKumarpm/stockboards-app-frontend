@@ -9,118 +9,99 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Search, Plus, MoreHorizontal, Eye, Trash2, Copy, Filter } from "lucide-react"
+import { Search, Plus, MoreHorizontal, Eye, Trash2, Copy, Filter, FileText } from "lucide-react"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 
-// Mock inventory data
-const inventoryData = [
+const inventoryLogsData = [
   {
     id: 1,
-    name: "Laptop Model X",
-    category: "Electronics",
-    quantity: 50,
-    price: 1200,
-    supplier: "Tech Supplier Inc.",
-    status: "In Stock",
-    lastUpdated: "2024-07-26",
+    logName: "Q4 2024 Inventory Count",
+    createdDate: "2024-12-15",
+    createdBy: "John Smith",
+    status: "Active",
+    itemCount: 45,
   },
   {
     id: 2,
-    name: "Office Chair",
-    category: "Furniture",
-    quantity: 100,
-    price: 150,
-    supplier: "Furniture Co.",
-    status: "In Stock",
-    lastUpdated: "2024-07-25",
+    logName: "Monthly Stock Check - December",
+    createdDate: "2024-12-01",
+    createdBy: "Sarah Johnson",
+    status: "Completed",
+    itemCount: 32,
   },
   {
     id: 3,
-    name: "Printer Model Y",
-    category: "Electronics",
-    quantity: 25,
-    price: 300,
-    supplier: "Tech Supplier Inc.",
-    status: "In Stock",
-    lastUpdated: "2024-07-24",
+    logName: "New Product Launch Inventory",
+    createdDate: "2024-11-28",
+    createdBy: "Mike Wilson",
+    status: "Active",
+    itemCount: 18,
   },
   {
     id: 4,
-    name: "Desk Lamp",
-    category: "Furniture",
-    quantity: 75,
-    price: 50,
-    supplier: "Furniture Co.",
-    status: "In Stock",
-    lastUpdated: "2024-07-23",
+    logName: "Warehouse Audit - November",
+    createdDate: "2024-11-15",
+    createdBy: "Emily Davis",
+    status: "Completed",
+    itemCount: 67,
   },
   {
     id: 5,
-    name: "Keyboard",
-    category: "Electronics",
-    quantity: 5,
-    price: 75,
-    supplier: "Tech Supplier Inc.",
-    status: "Low Stock",
-    lastUpdated: "2024-07-22",
-  },
-  {
-    id: 6,
-    name: "Mouse",
-    category: "Electronics",
-    quantity: 150,
-    price: 50,
-    supplier: "Tech Supplier Inc.",
-    status: "In Stock",
-    lastUpdated: "2024-07-21",
+    logName: "Emergency Stock Check",
+    createdDate: "2024-11-10",
+    createdBy: "John Smith",
+    status: "Draft",
+    itemCount: 12,
   },
 ]
 
 export default function InventoryPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [supplierFilter, setSupplierFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [createdByFilter, setCreatedByFilter] = useState("all")
   const { toast } = useToast()
 
-  const filteredInventory = inventoryData.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = categoryFilter === "all" || item.category === categoryFilter
-    const matchesSupplier = supplierFilter === "all" || item.supplier === supplierFilter
-    const matchesStatus = statusFilter === "all" || item.status === statusFilter
+  const filteredLogs = inventoryLogsData.filter((log) => {
+    const matchesSearch = log.logName.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "all" || log.status === statusFilter
+    const matchesCreatedBy = createdByFilter === "all" || log.createdBy === createdByFilter
 
-    return matchesSearch && matchesCategory && matchesSupplier && matchesStatus
+    return matchesSearch && matchesStatus && matchesCreatedBy
   })
 
   const handleDelete = (id: number, name: string) => {
     toast({
-      title: "Item Deleted",
-      description: `${name} has been removed from inventory.`,
+      title: "Log Deleted",
+      description: `${name} has been removed.`,
       variant: "destructive",
     })
   }
 
-  const handleCopy = (item: any) => {
-    navigator.clipboard.writeText(JSON.stringify(item, null, 2))
+  const handleCopy = (log: any) => {
+    navigator.clipboard.writeText(JSON.stringify(log, null, 2))
     toast({
-      title: "Item Copied",
-      description: "Item details copied to clipboard.",
+      title: "Log Copied",
+      description: "Log details copied to clipboard.",
     })
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "In Stock":
+      case "Active":
         return (
-          <Badge variant="secondary" className="bg-accent/10 text-accent">
-            In Stock
+          <Badge variant="secondary" className="bg-green-100 text-green-800">
+            Active
           </Badge>
         )
-      case "Low Stock":
-        return <Badge variant="destructive">Low Stock</Badge>
-      case "Out of Stock":
-        return <Badge variant="destructive">Out of Stock</Badge>
+      case "Completed":
+        return (
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+            Completed
+          </Badge>
+        )
+      case "Draft":
+        return <Badge variant="outline">Draft</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -136,15 +117,13 @@ export default function InventoryPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Inventory</h1>
-          <p className="text-muted-foreground">Manage your inventory items and stock levels</p>
+          <h1 className="text-3xl font-bold text-foreground">Inventory Logs</h1>
+          <p className="text-muted-foreground">Manage your inventory log sessions and track stock counts</p>
         </div>
-        <Link href="/dashboard/inventory/add">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Item
-          </Button>
-        </Link>
+        <Button>
+          <Plus className="w-4 h-4 mr-2" />
+          Create New Log
+        </Button>
       </motion.div>
 
       {/* Filters */}
@@ -161,54 +140,45 @@ export default function InventoryPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Search inventory..."
+                  placeholder="Search logs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="Electronics">Electronics</SelectItem>
-                  <SelectItem value="Furniture">Furniture</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={supplierFilter} onValueChange={setSupplierFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Suppliers</SelectItem>
-                  <SelectItem value="Tech Supplier Inc.">Tech Supplier Inc.</SelectItem>
-                  <SelectItem value="Furniture Co.">Furniture Co.</SelectItem>
-                </SelectContent>
-              </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Stock Status" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="In Stock">In Stock</SelectItem>
-                  <SelectItem value="Low Stock">Low Stock</SelectItem>
-                  <SelectItem value="Out of Stock">Out of Stock</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Draft">Draft</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={createdByFilter} onValueChange={setCreatedByFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Created By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Users</SelectItem>
+                  <SelectItem value="John Smith">John Smith</SelectItem>
+                  <SelectItem value="Sarah Johnson">Sarah Johnson</SelectItem>
+                  <SelectItem value="Mike Wilson">Mike Wilson</SelectItem>
+                  <SelectItem value="Emily Davis">Emily Davis</SelectItem>
                 </SelectContent>
               </Select>
               <Button
                 variant="outline"
                 onClick={() => {
                   setSearchTerm("")
-                  setCategoryFilter("all")
-                  setSupplierFilter("all")
                   setStatusFilter("all")
+                  setCreatedByFilter("all")
                 }}
               >
                 Clear Filters
@@ -218,7 +188,7 @@ export default function InventoryPage() {
         </Card>
       </motion.div>
 
-      {/* Inventory Table */}
+      {/* Inventory Logs Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -229,26 +199,22 @@ export default function InventoryPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Item Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Stock Quantity</TableHead>
-                  <TableHead>Purchase Price</TableHead>
-                  <TableHead>Supplier</TableHead>
+                  <TableHead>Log Name</TableHead>
+                  <TableHead>Created Date</TableHead>
+                  <TableHead>Created By</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Last Updated</TableHead>
+                  <TableHead>Item Count</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInventory.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.category}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>${item.price}</TableCell>
-                    <TableCell>{item.supplier}</TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                    <TableCell>{item.lastUpdated}</TableCell>
+                {filteredLogs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-medium">{log.logName}</TableCell>
+                    <TableCell>{log.createdDate}</TableCell>
+                    <TableCell>{log.createdBy}</TableCell>
+                    <TableCell>{getStatusBadge(log.status)}</TableCell>
+                    <TableCell>{log.itemCount} items</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -257,16 +223,22 @@ export default function InventoryPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/inventory/${log.id}`}>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Open Log
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleCopy(item)}>
+                          <DropdownMenuItem onClick={() => handleCopy(log)}>
                             <Copy className="mr-2 h-4 w-4" />
                             Copy
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDelete(item.id, item.name)}
+                            onClick={() => handleDelete(log.id, log.logName)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -290,7 +262,7 @@ export default function InventoryPage() {
         transition={{ duration: 0.5, delay: 0.3 }}
         className="text-sm text-muted-foreground"
       >
-        Showing {filteredInventory.length} of {inventoryData.length} items
+        Showing {filteredLogs.length} of {inventoryLogsData.length} logs
       </motion.div>
     </div>
   )

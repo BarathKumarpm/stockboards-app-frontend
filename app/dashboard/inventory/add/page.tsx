@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowLeft, Save, Package } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -27,7 +28,16 @@ export default function AddInventoryPage() {
     supplier: "",
     sku: "",
     location: "",
+    hsnCode: "",
+    stockMode: "",
+    initialSharedQuantity: "",
   })
+
+  const [companyStocks, setCompanyStocks] = useState([
+    { company: "Company A", quantity: "" },
+    { company: "Company B", quantity: "" },
+    { company: "Company C", quantity: "" },
+  ])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +51,10 @@ export default function AddInventoryPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleCompanyStockChange = (index: number, quantity: string) => {
+    setCompanyStocks((prev) => prev.map((stock, i) => (i === index ? { ...stock, quantity } : stock)))
   }
 
   return (
@@ -70,7 +84,7 @@ export default function AddInventoryPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <Card className="bg-card/50 backdrop-blur-sm border-0 max-w-2xl">
+        <Card className="bg-card/50 backdrop-blur-sm border-0 max-w-4xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="w-5 h-5" />
@@ -91,12 +105,13 @@ export default function AddInventoryPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sku">SKU</Label>
+                  <Label htmlFor="sku">SKU *</Label>
                   <Input
                     id="sku"
                     placeholder="Enter SKU"
                     value={formData.sku}
                     onChange={(e) => handleInputChange("sku", e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -151,7 +166,7 @@ export default function AddInventoryPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Purchase Price *</Label>
+                  <Label htmlFor="price">Purchase Price</Label>
                   <Input
                     id="price"
                     type="number"
@@ -159,20 +174,89 @@ export default function AddInventoryPage() {
                     placeholder="Enter price"
                     value={formData.price}
                     onChange={(e) => handleInputChange("price", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="supplier">Supplier</Label>
+                  <Input
+                    id="supplier"
+                    placeholder="Enter supplier name"
+                    value={formData.supplier}
+                    onChange={(e) => handleInputChange("supplier", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hsnCode">HSN Code *</Label>
+                  <Input
+                    id="hsnCode"
+                    placeholder="Enter HSN code"
+                    value={formData.hsnCode}
+                    onChange={(e) => handleInputChange("hsnCode", e.target.value)}
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier *</Label>
-                <Input
-                  id="supplier"
-                  placeholder="Enter supplier name"
-                  value={formData.supplier}
-                  onChange={(e) => handleInputChange("supplier", e.target.value)}
-                  required
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="stockMode">Stock Mode *</Label>
+                  <Select value={formData.stockMode} onValueChange={(value) => handleInputChange("stockMode", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select stock mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Shared">Shared</SelectItem>
+                      <SelectItem value="Separate">Separate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.stockMode === "Shared" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="initialSharedQuantity">Initial Shared Quantity</Label>
+                    <Input
+                      id="initialSharedQuantity"
+                      type="number"
+                      placeholder="Enter shared quantity"
+                      value={formData.initialSharedQuantity}
+                      onChange={(e) => handleInputChange("initialSharedQuantity", e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {formData.stockMode === "Separate" && (
+                  <div className="space-y-2">
+                    <Label>Initial Stock per Company</Label>
+                    <Card className="p-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Company</TableHead>
+                            <TableHead>Initial Quantity</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {companyStocks.map((stock, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="font-medium">{stock.company}</TableCell>
+                              <TableCell>
+                                <Input
+                                  type="number"
+                                  placeholder="Enter quantity"
+                                  value={stock.quantity}
+                                  onChange={(e) => handleCompanyStockChange(index, e.target.value)}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Card>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">

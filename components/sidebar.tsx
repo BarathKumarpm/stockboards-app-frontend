@@ -71,7 +71,7 @@ export function Sidebar() {
               <Button
                 variant={isActive ? "default" : "ghost"}
                 className={cn(
-                  "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent",
+                  "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-white",
                   isActive && "bg-sidebar-primary text-sidebar-primary-foreground",
                   collapsed && "px-2",
                 )}
