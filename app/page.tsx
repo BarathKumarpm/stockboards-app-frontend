@@ -29,7 +29,7 @@ export default function LandingPage() {
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Image src="/stock-boards-logo.png" alt="Stock Boards Logo" width={40} height={40} className="w-10 h-10" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-black to-gray-800 bg-clip-text text-transparent">
               Stock Boards
             </span>
           </div>
@@ -76,8 +76,8 @@ export default function LandingPage() {
           >
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="text-left">
-                <div className="inline-flex items-center px-4 py-2 bg-primary/30 border border-primary/50 rounded-full text-white text-sm font-medium mb-6">
-                  <Zap className="w-4 h-4 mr-2" />
+                <div className="inline-flex items-center px-4 py-2 bg-slate-100 border border-slate-200 rounded-full text-slate-700 text-sm font-medium mb-6">
+                  <Zap className="w-4 h-4 mr-2 text-slate-600" />
                   Smart Inventory Platform
                 </div>
 
@@ -132,8 +132,8 @@ export default function LandingPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 z-10 rounded-2xl"></div>
                 </div>
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-accent to-secondary rounded-full opacity-20 animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full opacity-30 animate-pulse delay-1000"></div>
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-500 rounded-full opacity-20 animate-pulse"></div>
+                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-red-500 rounded-full opacity-30 animate-pulse delay-1000"></div>
               </div>
             </div>
           </motion.div>
@@ -153,42 +153,42 @@ export default function LandingPage() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            <Card className="p-6 border-0 bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-6 h-6 text-primary" />
+            <Card className="p-6 border-0 bg-red-500 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold mb-3 text-foreground">Track Inventory in Real-Time</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <h3 className="text-lg font-semibold mb-3 text-white">Track Inventory in Real-Time</h3>
+              <p className="text-white/90 text-sm leading-relaxed">
                 Monitor stock levels, movements, and trends with live updates and intelligent forecasting.
               </p>
             </Card>
 
-            <Card className="p-6 border-0 bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Bell className="w-6 h-6 text-secondary" />
+            <Card className="p-6 border-0 bg-yellow-500 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Bell className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold mb-3 text-foreground">Automated Low-Stock Alerts</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <h3 className="text-lg font-semibold mb-3 text-white">Automated Low-Stock Alerts</h3>
+              <p className="text-white/90 text-sm leading-relaxed">
                 Never run out of stock with smart notifications and automated reorder suggestions.
               </p>
             </Card>
 
-            <Card className="p-6 border-0 bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Database className="w-6 h-6 text-accent" />
+            <Card className="p-6 border-0 bg-sky-500 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Database className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold mb-3 text-foreground">Seamless Tally Integration</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <h3 className="text-lg font-semibold mb-3 text-white">Seamless Tally Integration</h3>
+              <p className="text-white/90 text-sm leading-relaxed">
                 Sync seamlessly with Tally Prime for unified accounting and inventory management.
               </p>
             </Card>
 
-            <Card className="p-6 border-0 bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <TrendingUp className="w-6 h-6 text-primary" />
+            <Card className="p-6 border-0 bg-green-500 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-semibold mb-3 text-foreground">Smart Analytics</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <h3 className="text-lg font-semibold mb-3 text-white">Smart Analytics</h3>
+              <p className="text-white/90 text-sm leading-relaxed">
                 Get actionable insights with advanced reporting and predictive analytics.
               </p>
             </Card>
@@ -224,13 +224,39 @@ export default function LandingPage() {
                   <h3 className="text-lg font-semibold">Stock Movement</h3>
                   <Badge variant="secondary">Live</Badge>
                 </div>
-                <div className="h-48 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg flex items-end justify-center gap-2 p-4">
-                  <div className="w-8 bg-primary/60 rounded-t" style={{ height: "60%" }}></div>
-                  <div className="w-8 bg-primary/80 rounded-t" style={{ height: "80%" }}></div>
-                  <div className="w-8 bg-primary rounded-t" style={{ height: "100%" }}></div>
-                  <div className="w-8 bg-secondary/60 rounded-t" style={{ height: "40%" }}></div>
-                  <div className="w-8 bg-secondary/80 rounded-t" style={{ height: "70%" }}></div>
-                  <div className="w-8 bg-secondary rounded-t" style={{ height: "90%" }}></div>
+                <div className="h-48 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg flex items-end justify-center gap-2 p-4 relative">
+                  <div
+                    className="w-8 bg-gradient-to-t from-red-600 to-red-400 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "60%" }}
+                  ></div>
+                  <div
+                    className="w-8 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "80%" }}
+                  ></div>
+                  <div
+                    className="w-8 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "100%" }}
+                  ></div>
+                  <div
+                    className="w-8 bg-gradient-to-t from-green-600 to-green-400 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "40%" }}
+                  ></div>
+                  <div
+                    className="w-8 bg-gradient-to-t from-gray-800 to-gray-600 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "70%" }}
+                  ></div>
+                  <div
+                    className="w-8 bg-gradient-to-t from-red-600 to-red-400 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "90%" }}
+                  ></div>
+                  <div
+                    className="w-8 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "55%" }}
+                  ></div>
+                  <div
+                    className="w-8 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t shadow-lg transform hover:scale-105 transition-transform"
+                    style={{ height: "75%" }}
+                  ></div>
                 </div>
               </Card>
             </div>
@@ -240,33 +266,33 @@ export default function LandingPage() {
         <section className="py-20">
           <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
             <div className="order-2 lg:order-1">
-              <Card className="p-8 bg-gradient-to-br from-card to-muted/30 border-0 shadow-xl">
+              <Card className="p-8 bg-gradient-to-br from-card to-muted/30 border-0 shadow-2xl transform hover:scale-105 transition-all duration-300">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-lg">
-                    <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-primary" />
+                  <div className="flex items-center gap-4 p-4 bg-blue-600 rounded-lg shadow-lg transform hover:translate-y-[-2px] hover:shadow-xl transition-all duration-300 border-l-4 border-blue-800 border-r-2 border-r-blue-300">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shadow-inner">
+                      <Zap className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-medium">Email Parsing</h4>
-                      <p className="text-sm text-muted-foreground">Automatically extract order data</p>
+                      <h4 className="font-medium text-white">Email Parsing</h4>
+                      <p className="text-sm text-white/90">Automatically extract order data</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 p-4 bg-secondary/10 rounded-lg">
-                    <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
-                      <Database className="w-5 h-5 text-secondary" />
+                  <div className="flex items-center gap-4 p-4 bg-blue-500 rounded-lg shadow-lg transform hover:translate-y-[-2px] hover:shadow-xl transition-all duration-300 border-l-4 border-blue-700 border-r-2 border-r-blue-200">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shadow-inner">
+                      <Database className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-medium">Tally Sync</h4>
-                      <p className="text-sm text-muted-foreground">Real-time data synchronization</p>
+                      <h4 className="font-medium text-white">Tally Sync</h4>
+                      <p className="text-sm text-white/90">Real-time data synchronization</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 p-4 bg-accent/10 rounded-lg">
-                    <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center">
-                      <LineChart className="w-5 h-5 text-accent" />
+                  <div className="flex items-center gap-4 p-4 bg-blue-400 rounded-lg shadow-lg transform hover:translate-y-[-2px] hover:shadow-xl transition-all duration-300 border-l-4 border-blue-600 border-r-2 border-r-blue-100">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shadow-inner">
+                      <LineChart className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-medium">Quick Data Entry</h4>
-                      <p className="text-sm text-muted-foreground">Streamlined input workflows</p>
+                      <h4 className="font-medium text-white">Quick Data Entry</h4>
+                      <p className="text-sm text-white/90">Streamlined input workflows</p>
                     </div>
                   </div>
                 </div>
@@ -370,7 +396,7 @@ export default function LandingPage() {
                   height={32}
                   className="w-8 h-8"
                 />
-                <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-black to-gray-800 bg-clip-text text-transparent">
                   Stock Boards
                 </span>
               </div>
