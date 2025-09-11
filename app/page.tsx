@@ -125,7 +125,7 @@ export default function LandingPage() {
               <div className="relative">
                 <div className="w-full h-96 rounded-2xl border-2 border-border/30 shadow-2xl relative overflow-hidden">
                   <Image
-                    src="/stockboards-workflow.png"
+                    src="/stockboards-hero-clean.png"
                     alt="Stock Boards Workflow Integration Diagram"
                     fill
                     className="object-contain rounded-2xl p-4 bg-white"
