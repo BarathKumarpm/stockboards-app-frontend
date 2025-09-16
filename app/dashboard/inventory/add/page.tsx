@@ -1,279 +1,104 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowLeft, Save, Package } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import axios from "axios"
 
-export default function AddInventoryPage() {
+type InventoryLog = {
+  id: number
+  logName: string
+}
+
+export default function AddInventoryItem() {
   const router = useRouter()
   const { toast } = useToast()
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    category: "",
-    quantity: "",
-    price: "",
-    supplier: "",
-    sku: "",
-    location: "",
-    hsnCode: "",
-    stockMode: "",
-    initialSharedQuantity: "",
+  const [logs, setLogs] = useState<InventoryLog[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const [newItem, setNewItem] = useState({
+    logId: 0,
+    company: "",
+    product: "",
+    qty: 0,
+    rate: 0,
+    amount: 0,
+    hsn: "",
   })
 
-  const [companyStocks, setCompanyStocks] = useState([
-    { company: "Company A", quantity: "" },
-    { company: "Company B", quantity: "" },
-    { company: "Company C", quantity: "" },
-  ])
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle form submission
-    toast({
-      title: "Item Added Successfully",
-      description: `${formData.name} has been added to your inventory.`,
-    })
-    router.push("/dashboard/inventory")
+  useEffect(() => {
+    async function fetchLogs() {
+      try {
+        const res = await axios.get(`${API_BASE}/logs/`)
+        setLogs(res.data)
+      } catch (error) {
+        toast({ title: "Error", description: "Could not fetch logs.", variant: "destructive" })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchLogs()
+  }, [])
+
+  const handleAddItem = async () => {
+    if (!newItem.logId || !newItem.company || !newItem.product || newItem.qty <= 0) {
+      toast({ title: "Error", description: "Please fill all required fields." })
+      return
+    }
+
+    try {
+      const payload = {
+        log: newItem.logId,
+        company: newItem.company,
+        product: newItem.product,
+        qty: newItem.qty,
+        rate: newItem.rate,
+        amount: newItem.amount,
+        hsn: newItem.hsn,
+      }
+      await axios.post(`${API_BASE}/items/`, payload)
+      toast({ title: "Item Added", description: "Inventory item added successfully." })
+      router.push(`/dashboard/inventory/${newItem.logId}`) // redirect to log detail page
+    } catch (error) {
+      toast({ title: "Error", description: "Could not add item.", variant: "destructive" })
+    }
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleCompanyStockChange = (index: number, quantity: string) => {
-    setCompanyStocks((prev) => prev.map((stock, i) => (i === index ? { ...stock, quantity } : stock)))
-  }
+  if (loading) return <p className="p-4">Loading logs...</p>
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex items-center gap-4"
-      >
-        <Link href="/dashboard/inventory">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Inventory
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Add New Item</h1>
-          <p className="text-muted-foreground">Add a new item to your inventory</p>
-        </div>
-      </motion.div>
+    <div className="p-4 max-w-md mx-auto space-y-4">
+      <Card className="p-4">
+        <CardHeader><CardTitle>Add Inventory Item</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <Select value={newItem.logId.toString()} onValueChange={(val) => setNewItem({ ...newItem, logId: Number(val) })}>
+            <SelectTrigger><SelectValue placeholder="Select Inventory Log" /></SelectTrigger>
+            <SelectContent>
+              {logs.map((log) => (
+                <SelectItem key={log.id} value={log.id.toString()}>{log.logName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-      {/* Form */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <Card className="bg-card/50 backdrop-blur-sm border-0 max-w-4xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5" />
-              Item Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Item Name *</Label>
-                  <Input
-                    id="name"
-                    placeholder="Enter item name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sku">SKU *</Label>
-                  <Input
-                    id="sku"
-                    placeholder="Enter SKU"
-                    value={formData.sku}
-                    onChange={(e) => handleInputChange("sku", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+          <Input placeholder="Company" value={newItem.company} onChange={(e) => setNewItem({ ...newItem, company: e.target.value })} />
+          <Input placeholder="Product" value={newItem.product} onChange={(e) => setNewItem({ ...newItem, product: e.target.value })} />
+          <Input type="number" placeholder="Qty" value={newItem.qty} onChange={(e) => setNewItem({ ...newItem, qty: Number(e.target.value) })} />
+          <Input type="number" placeholder="Rate" value={newItem.rate} onChange={(e) => setNewItem({ ...newItem, rate: Number(e.target.value) })} />
+          <Input type="number" placeholder="Amount" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: Number(e.target.value) })} />
+          <Input placeholder="HSN" value={newItem.hsn} onChange={(e) => setNewItem({ ...newItem, hsn: e.target.value })} />
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Enter item description"
-                  value={formData.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Electronics">Electronics</SelectItem>
-                      <SelectItem value="Furniture">Furniture</SelectItem>
-                      <SelectItem value="Office Supplies">Office Supplies</SelectItem>
-                      <SelectItem value="Equipment">Equipment</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Storage Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="Enter storage location"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange("location", e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="quantity">Initial Quantity *</Label>
-                  <Input
-                    id="quantity"
-                    type="number"
-                    placeholder="Enter quantity"
-                    value={formData.quantity}
-                    onChange={(e) => handleInputChange("quantity", e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price">Purchase Price</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    placeholder="Enter price"
-                    value={formData.price}
-                    onChange={(e) => handleInputChange("price", e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="supplier">Supplier</Label>
-                  <Input
-                    id="supplier"
-                    placeholder="Enter supplier name"
-                    value={formData.supplier}
-                    onChange={(e) => handleInputChange("supplier", e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hsnCode">HSN Code *</Label>
-                  <Input
-                    id="hsnCode"
-                    placeholder="Enter HSN code"
-                    value={formData.hsnCode}
-                    onChange={(e) => handleInputChange("hsnCode", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="stockMode">Stock Mode *</Label>
-                  <Select value={formData.stockMode} onValueChange={(value) => handleInputChange("stockMode", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select stock mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Shared">Shared</SelectItem>
-                      <SelectItem value="Separate">Separate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {formData.stockMode === "Shared" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="initialSharedQuantity">Initial Shared Quantity</Label>
-                    <Input
-                      id="initialSharedQuantity"
-                      type="number"
-                      placeholder="Enter shared quantity"
-                      value={formData.initialSharedQuantity}
-                      onChange={(e) => handleInputChange("initialSharedQuantity", e.target.value)}
-                    />
-                  </div>
-                )}
-
-                {formData.stockMode === "Separate" && (
-                  <div className="space-y-2">
-                    <Label>Initial Stock per Company</Label>
-                    <Card className="p-4">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Company</TableHead>
-                            <TableHead>Initial Quantity</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {companyStocks.map((stock, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">{stock.company}</TableCell>
-                              <TableCell>
-                                <Input
-                                  type="number"
-                                  placeholder="Enter quantity"
-                                  value={stock.quantity}
-                                  onChange={(e) => handleCompanyStockChange(index, e.target.value)}
-                                />
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </Card>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1">
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Item
-                </Button>
-                <Link href="/dashboard/inventory">
-                  <Button type="button" variant="outline">
-                    Cancel
-                  </Button>
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </motion.div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => router.back()}>Cancel</Button>
+            <Button onClick={handleAddItem}>Add Item</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
