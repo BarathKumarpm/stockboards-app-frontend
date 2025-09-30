@@ -8,7 +8,7 @@ import {
   type KindePageEvent,
 } from "@kinde/infrastructure";
 import React from "react";
-import { getStyles } from "./environment/pages/(kinde)/style";
+import { getStyles } from "./styles/style";
 interface RootProps extends KindePageEvent {
   children: React.ReactNode;
 }
