@@ -1,6 +1,6 @@
 "use server";
 
-import { Widget } from "@/components/widget";
+import { Widget } from "@/kindeSrc/components/widget";
 import { DefaultLayout } from "../layout";
 import { Root } from "../../../../root";
 import { type KindePageEvent } from "@kinde/infrastructure";
