@@ -520,7 +520,7 @@ export default function Home() {
           {/* Bottom section */}
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm">
-              &copy; {new Date().getFullYear()} StockBoards. All rights reserved.
+              &copy; {new Date().getFullYear()} StockBoards. All rights reserved and Terms and conditions apply.
             </p>
             <div className="flex items-center gap-6 text-sm text-gray-400">
               <a href="#" className="hover:text-blue-400 transition-colors">Privacy Policy</a>
