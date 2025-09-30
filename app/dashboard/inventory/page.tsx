@@ -1,259 +1,292 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Search, Plus, MoreHorizontal, Eye, Trash2, Copy, Filter } from "lucide-react"
-import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
-import axios from "axios"
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import axios from "axios";
 
-type InventoryLog = {
-  id: number
-  logName: string
-  createdDate: string
-  createdBy: string
-  status: string
-  itemCount: number
+// UI Components
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+
+// Icons
+import { Package, Plus, Loader2, List, MoreHorizontal, Trash2, Eye, Save } from "lucide-react";
+
+// Types
+interface IInventoryLog {
+    id: number;
+    name: string;
+    created_at: string;
+    total_stock_entries: number; 
+    is_active: boolean;
 }
 
-export default function InventoryPage() {
-  const [logs, setLogs] = useState<InventoryLog[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [createdByFilter, setCreatedByFilter] = useState("all")
-  const { toast } = useToast()
+import { useToast } from "@/hooks/use-toast";
 
-  // Modal state
-  const [showModal, setShowModal] = useState(false)
-  const [creating, setCreating] = useState(false)
-  const [newLog, setNewLog] = useState({
-    logName: "",
-    createdBy: "",
-    status: "Draft",
-    itemCount: 0,
-  })
+// Use the local storage to get the base URL, or use a default fallback
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api"
+// --- Helper Functions ---
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
 
-  useEffect(() => {
-    async function fetchLogs() {
-      try {
-        const res = await axios.get(`${API_BASE}/logs/`)
-        // map backend fields to frontend-friendly names
-        const mapped = res.data.map((log: any) => ({
-          id: log.id,
-          logName: log.name || "Untitled",
-          createdBy: log.created_by || "Unknown",
-          status: log.status || "Draft",
-          createdDate: log.created_at || "",
-          itemCount: log.itemCount || 0,
-        }))
-        setLogs(mapped)
-      } catch (error) {
-        console.error("Error fetching inventory logs:", error)
-        toast({ title: "Error", description: "Could not fetch logs.", variant: "destructive" })
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchLogs()
-  }, [])
+// --- Component Definition ---
 
-  // Filter logs safely
-  const filteredLogs = logs.filter((log) => {
-    const logName = log.logName || ""
-    const status = log.status || ""
-    const createdBy = log.createdBy || ""
+export default function InventoryLogListPage() {
+    const router = useRouter();
+    const { toast } = useToast();
 
-    const matchesSearch = logName.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || status === statusFilter
-    const matchesCreatedBy = createdByFilter === "all" || createdBy === createdByFilter
+    // Data States
+    const [logs, setLogs] = useState<IInventoryLog[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [newLogName, setNewLogName] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    return matchesSearch && matchesStatus && matchesCreatedBy
-  })
+    // ---------------------------------------------------
+    // 1. DATA FETCHING & API ACTIONS
+    // ---------------------------------------------------
 
-  // Create log handler
-  const handleCreate = async () => {
-    if (!newLog.logName || !newLog.createdBy) {
-      toast({ title: "Error", description: "Please fill required fields." })
-      return
-    }
-    try {
-      setCreating(true)
-      const payload = {
-        name: newLog.logName,
-        created_by: newLog.createdBy,
-        status: newLog.status,
-      }
-      const res = await axios.post(`${API_BASE}/logs/`, payload)
-      const createdLog = {
-        id: res.data.id,
-        logName: res.data.name,
-        createdBy: res.data.created_by,
-        status: res.data.status,
-        createdDate: res.data.created_at,
-        itemCount: res.data.itemCount || 0,
-      }
-      setLogs((prev) => [...prev, createdLog])
-      setShowModal(false)
-      setNewLog({ logName: "", createdBy: "", status: "Draft", itemCount: 0 })
-      toast({ title: "Log Created", description: "New inventory log has been created." })
-    } catch (error) {
-      console.error("Create log error:", error)
-      toast({ title: "Error", description: "Could not create log.", variant: "destructive" })
-    } finally {
-      setCreating(false)
-    }
-  }
+    const fetchInventoryLogs = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get(`${API_BASE}/inventory-logs/`);
+            
+            const logsData: IInventoryLog[] = res.data.map((log: any) => ({
+                id: log.id,
+                name: log.name,
+                created_at: log.created_at,
+                // Assuming the API returns a count or we can use the length of the nested list
+                total_stock_entries: log.total_stock_entries || log.stock_entries?.length || 0,
+                is_active: log.is_active ?? true, 
+            }));
 
-  const handleDelete = async (id: number, name: string) => {
-    try {
-      await axios.delete(`${API_BASE}/logs/${id}/`)
-      setLogs((prev) => prev.filter((log) => log.id !== id))
-      toast({ title: "Log Deleted", description: `${name} removed.`, variant: "destructive" })
-    } catch (error) {
-      toast({ title: "Error", description: "Could not delete log.", variant: "destructive" })
-    }
-  }
+            setLogs(logsData);
 
-  const handleCopy = (log: any) => {
-    navigator.clipboard.writeText(JSON.stringify(log, null, 2))
-    toast({ title: "Log Copied", description: "Log details copied to clipboard." })
-  }
+        } catch (error) {
+            console.error("Error fetching inventory logs:", error);
+            toast({ 
+                title: "Error", 
+                description: `Could not fetch the list of inventory logs. Please check the API connection.`, 
+                variant: "destructive" 
+            });
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Active":
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
-      case "Completed":
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Completed</Badge>
-      case "Draft":
-        return <Badge variant="outline">Draft</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
+    useEffect(() => {
+        fetchInventoryLogs();
+    }, [fetchInventoryLogs]);
+    
+    const handleCreateLog = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newLogName.trim()) return;
 
-  if (loading) return <p className="p-4">Loading logs...</p>
+        setIsSubmitting(true);
+        try {
+            // API call to create a new log
+            await axios.post(`${API_BASE}/inventory-logs/`, {
+                name: newLogName.trim(),
+                is_active: true, // Default to active
+            });
 
-  return (
-    <div className="space-y-10 p-2">
-      {/* Header and create log modal */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Inventory Logs</h1>
-          <p className="text-muted-foreground">Manage your inventory log sessions and track stock counts</p>
+            toast({ title: "Success", description: `Inventory Log "${newLogName}" created.` });
+            setNewLogName("");
+            setIsCreateModalOpen(false);
+            fetchInventoryLogs(); // Refresh the list
+        } catch (error) {
+            console.error("Error creating log:", error);
+            toast({ title: "Error", description: "Could not create the new inventory log.", variant: "destructive" });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteLog = async (logId: number, logName: string) => {
+        if (!confirm(`Are you sure you want to delete the log: "${logName}" (ID: ${logId})? This action cannot be undone.`)) return;
+
+        try {
+            // API call to delete the log
+            await axios.delete(`${API_BASE}/inventory-logs/${logId}/`);
+            toast({ title: "Log Deleted", description: `Log "${logName}" successfully removed.`, variant: "destructive" });
+            fetchInventoryLogs(); // Refresh the data
+        } catch (error) {
+            console.error("Error deleting log:", error);
+            toast({ title: "Error Deleting", description: "Could not delete the inventory log. Ensure it has no dependencies.", variant: "destructive" });
+        }
+    };
+    
+    // ---------------------------------------------------
+    // 2. RENDERING
+    // ---------------------------------------------------
+
+    if (loading) return (
+        <div className="flex justify-center items-center h-screen">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2 text-lg text-muted-foreground">Loading Inventory Logs...</p>
         </div>
-        <div>
-          <Button onClick={() => setShowModal(true)}><Plus className="w-4 h-4 mr-2" />Create New Log</Button>
-          {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-card p-6 rounded-lg w-96 space-y-4">
-                <h2 className="text-lg font-bold">Create New Inventory Log</h2>
-                <Input placeholder="Log Name" value={newLog.logName} onChange={(e) => setNewLog({ ...newLog, logName: e.target.value })} />
-                <Input placeholder="Created By" value={newLog.createdBy} onChange={(e) => setNewLog({ ...newLog, createdBy: e.target.value })} />
-                <Select value={newLog.status} onValueChange={(val) => setNewLog({ ...newLog, status: val })}>
-                  <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Draft">Draft</SelectItem>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-                  <Button onClick={handleCreate} disabled={creating}>{creating ? "Creating..." : "Create"}</Button>
+    );
+
+    return (
+        <div className="space-y-10 p-8 max-w-7xl mx-auto">
+            
+            {/* Header and Add Item Button */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex items-center justify-between border-b pb-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+                        <List className="w-7 h-7 text-primary" />
+                        Inventory Logs Overview
+                    </h1>
+                    <p className="text-muted-foreground">Manage and view detailed stock movements and allocations.</p>
                 </div>
-              </motion.div>
-            </div>
-          )}
+                <div className="flex gap-4">
+                    <Button 
+                        // UPDATED: Green background, black hover, white text
+                        className="bg-blue-400 hover:bg-black text-white hover:text-white" 
+                        onClick={() => setIsCreateModalOpen(true)}
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create New Log
+                    </Button>
+                </div>
+            </motion.div>
+
+            {/* Metric Card (List Summary) */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+                <Card 
+                    // UPDATED: Green metric card styling
+                    className="bg-blue-300 border-blue-400 border-2 text-white"
+                >
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-white">Total Logs</CardTitle>
+                        <Package className="h-4 w-4 text-white" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {logs.length} Log{logs.length !== 1 ? 's' : ''}
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+
+            {/* Inventory Logs Table */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+                {/* REMOVED: Outer Card Wrapper */}
+                <h3 className="text-xl font-semibold mb-4">Inventory Records</h3>
+                
+                {/* The Table component itself provides the modern Mantine-style border and shadow */}
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Log ID</TableHead>
+                            <TableHead>Log Name</TableHead>
+                            <TableHead>Total Entries</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Created Date</TableHead>
+                            <TableHead className="text-center">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {logs.length > 0 ? (
+                            logs.map((log) => (
+                                <TableRow key={log.id} className="cursor-pointer hover:bg-muted/50">
+                                    <TableCell className="font-bold">{log.id}</TableCell>
+                                    <TableCell className="font-medium">{log.name}</TableCell>
+                                    <TableCell>{log.total_stock_entries}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={log.is_active ? "default" : "secondary"}>
+                                            {log.is_active ? 'Active' : 'Archived'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right text-sm text-muted-foreground">{formatDate(log.created_at)}</TableCell>
+                                    <TableCell className="text-center">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="w-8 h-8 p-0" onClick={(e) => e.stopPropagation()}>
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                {/* View Details - Links to your existing detail page */}
+                                                <Link href={`/dashboard/inventory/${log.id}`} legacyBehavior passHref>
+                                                    <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                                                        <Eye className="w-4 h-4" />View & Edit Log
+                                                    </DropdownMenuItem>
+                                                </Link>
+                                                <DropdownMenuSeparator />
+
+                                                {/* Delete Action */}
+                                                <DropdownMenuItem 
+                                                    onClick={() => handleDeleteLog(log.id, log.name)} 
+                                                    className="flex items-center gap-2 text-red-600 focus:text-red-700"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />Delete Log
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center p-10 text-lg text-muted-foreground">
+                                    No inventory logs found. Click "Create New Log" to start.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </motion.div>
+            
+            {/* --- Create Log Dialog (Unchanged) --- */}
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Create New Inventory Log</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateLog} className="space-y-4 py-4">
+                        <div className="space-y-1">
+                            <label htmlFor="logName" className="text-sm font-medium">Log Name (e.g., "Q4 2024 Stock", "Warehouse A Audit")</label>
+                            <Input 
+                                id="logName" 
+                                type="text" 
+                                placeholder="Enter log name..."
+                                value={newLogName}
+                                onChange={(e) => setNewLogName(e.target.value)}
+                                required 
+                            />
+                        </div>
+                        {/* Optional: Add a description or notes field here if needed */}
+                        <DialogFooter className="pt-4">
+                            <Button variant="outline" type="button" onClick={() => setIsCreateModalOpen(false)} disabled={isSubmitting}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting || newLogName.trim() === ""}>
+                                {isSubmitting ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Save className="mr-2 h-4 w-4" />
+                                )}
+                                Create Log
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
-      </motion.div>
-
-      {/* Filters */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-        <Card className="bg-card/50 backdrop-blur-sm border-0">
-          <CardHeader><CardTitle className="flex items-center gap-2"><Filter className="w-5 h-5" />Filters</CardTitle></CardHeader>
-          <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input placeholder="Search logs..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Draft">Draft</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={createdByFilter} onValueChange={setCreatedByFilter}>
-              <SelectTrigger><SelectValue placeholder="Created By" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Users</SelectItem>
-                {Array.from(new Set(logs.map((log) => log.createdBy))).map((user, idx) => (
-                  <SelectItem key={`${user}-${idx}`} value={user}>
-                    {user || "Unknown"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Logs Table */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-        <Card>
-          <CardHeader><CardTitle>Logs</CardTitle></CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Log Name</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created By</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell>{log.logName}</TableCell>
-                    <TableCell>{log.itemCount}</TableCell>
-                    <TableCell>{getStatusBadge(log.status)}</TableCell>
-                    <TableCell>{log.createdBy}</TableCell>
-                    <TableCell>{log.createdDate}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="w-8 h-8 p-0"><MoreHorizontal className="w-4 h-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem><Link href={`/dashboard/inventory/${log.id}`} className="flex items-center gap-2"><Eye className="w-4 h-4" />View</Link></DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleCopy(log)} className="flex items-center gap-2"><Copy className="w-4 h-4" />Copy</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(log.id, log.logName)} className="flex items-center gap-2"><Trash2 className="w-4 h-4" />Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
-  )
+    );
 }
